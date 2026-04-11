@@ -6,11 +6,11 @@ interface TaskCardProps {
   onDelete: (id: number) => void;
 }
 
-const priorityColors: Record<string, string> = {
-  Low: '#6b7280',
-  Medium: '#3b82f6',
-  High: '#f59e0b',
-  Urgent: '#ef4444',
+const priorityConfig: Record<string, { bg: string; color: string; border: string }> = {
+  Low: { bg: 'rgba(100, 116, 139, 0.15)', color: '#94a3b8', border: 'rgba(100, 116, 139, 0.3)' },
+  Medium: { bg: 'rgba(132, 204, 22, 0.12)', color: '#a3e635', border: 'rgba(132, 204, 22, 0.3)' },
+  High: { bg: 'rgba(250, 204, 21, 0.12)', color: '#facc15', border: 'rgba(250, 204, 21, 0.3)' },
+  Urgent: { bg: 'rgba(220, 38, 38, 0.15)', color: '#ef4444', border: 'rgba(220, 38, 38, 0.4)' },
 };
 
 const statusLabels: Record<string, string> = {
@@ -57,7 +57,11 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
       <div className="task-card-header">
         <span
           className="priority-badge"
-          style={{ backgroundColor: priorityColors[task.priority] }}
+          style={{
+            backgroundColor: priorityConfig[task.priority].bg,
+            color: priorityConfig[task.priority].color,
+            border: `1px solid ${priorityConfig[task.priority].border}`,
+          }}
         >
           {task.priority}
         </span>
