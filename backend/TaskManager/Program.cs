@@ -20,7 +20,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactDev", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+        // localhost and 127.0.0.1 are different browser origins; allow both for Vite/React dev.
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
