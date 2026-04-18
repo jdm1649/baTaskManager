@@ -76,3 +76,27 @@ export async function createSubtask(
   });
   return handleResponse<Subtask>(res);
 }
+
+/** Partial update. Send only the fields you want to change.
+ *  For systemPrompt, send "" to clear, null/undefined to leave unchanged. */
+export interface UpdateSubtaskPatch {
+  question?: string;
+  systemPrompt?: string | null;
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number | null;
+  notes?: string | null;
+  order?: number;
+}
+
+export async function updateSubtask(
+  subtaskId: number,
+  patch: UpdateSubtaskPatch,
+): Promise<Subtask> {
+  const res = await fetch(`${API_BASE}/subtasks/${subtaskId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  return handleResponse<Subtask>(res);
+}

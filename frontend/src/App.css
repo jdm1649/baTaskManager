@@ -834,17 +834,8 @@ body {
   margin: 0;
 }
 
-.agent-add-form {
-  border: 1px solid var(--accent-dim);
-  border-radius: 6px;
-  padding: 0.75rem;
-  margin-bottom: 0.75rem;
-  background: var(--bg-card);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
+/* Layout-only rules for the Add composer. Field theming lives in the
+   modal-wide .agent-modal input/select/textarea block further down. */
 .agent-add-row {
   display: flex;
   flex-wrap: wrap;
@@ -867,55 +858,6 @@ body {
 
 .agent-add-full {
   width: 100%;
-}
-
-.agent-add-form input,
-.agent-add-form select,
-.agent-add-form textarea {
-  background: var(--bg-input);
-  border: 1px solid var(--accent-dim);
-  color: var(--text-primary);
-  border-radius: 4px;
-  padding: 0.4rem 0.5rem;
-  font-family: inherit;
-  font-size: 0.9rem;
-}
-
-/* Native <option>s inherit the OS combobox theme by default, which is why
-   the dropdown rendered white/blue over our dark modal. Force them onto
-   our palette. Firefox/Chromium both honor this; Safari ignores it and
-   keeps its own native menu, which is fine. */
-.agent-add-form select option,
-.agent-run-controls select option {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-.agent-add-form select option:checked,
-.agent-add-form select option:hover,
-.agent-run-controls select option:checked,
-.agent-run-controls select option:hover {
-  background: var(--accent-dim);
-  color: var(--text-primary);
-}
-
-.agent-add-form textarea {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85rem;
-  resize: vertical;
-}
-
-.agent-add-form input:focus,
-.agent-add-form select:focus,
-.agent-add-form textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.2);
-}
-
-.agent-add-actions {
-  display: flex;
-  justify-content: flex-end;
 }
 
 .agent-run-controls label[for="agent-context-source"] {
@@ -1000,4 +942,386 @@ body {
 
 .agent-run-sys[open] summary {
   color: var(--text-secondary);
+}
+
+/* === A.7: wizard layout === */
+
+/* Stepper ------------------------------------------------------------ */
+.agent-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid var(--accent-dim);
+  margin-bottom: 1rem;
+}
+
+.agent-step-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-dim);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.agent-step-dot:hover {
+  border-color: var(--border-hover);
+  color: var(--text-secondary);
+}
+
+.agent-step-dot.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.agent-step-dot.muted {
+  opacity: 0.55;
+}
+
+.agent-step-dot .agent-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0 0.35rem;
+}
+
+.agent-step-dot.active .agent-step-num {
+  background: #000;
+  color: var(--accent);
+}
+
+.agent-step-dot .agent-step-kind {
+  font-size: 0.8rem;
+}
+
+.agent-step-dot .agent-step-sys-indicator {
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.agent-step-dot.active .agent-step-sys-indicator {
+  color: #000;
+}
+
+.agent-step-add {
+  border-style: dashed;
+}
+
+/* Step panel -------------------------------------------------------- */
+.agent-step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.agent-step-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.agent-step-title h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.agent-step-empty {
+  align-items: center;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.agent-step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Input/Output cards ------------------------------------------------ */
+.agent-io-card {
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.agent-io-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.agent-io-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--accent-dim);
+  border-radius: 4px;
+  background: var(--bg-input);
+}
+
+.agent-io-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.agent-io-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-primary);
+  background: var(--accent-dim);
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+}
+
+.agent-io-edit-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.agent-io-source-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.agent-io-source-label select {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-dim);
+  color: var(--text-primary);
+  border-radius: 3px;
+  padding: 0.2rem 0.4rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+}
+
+.agent-io-body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.agent-io-body.dim {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.agent-io-body.warn {
+  color: var(--warning);
+  font-style: italic;
+}
+
+.agent-io-editor {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-dim);
+  color: var(--text-primary);
+  border-radius: 3px;
+  padding: 0.4rem 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.agent-io-editor:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.2);
+}
+
+/* Step history ------------------------------------------------------ */
+.agent-step-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.agent-step-history-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--accent-dim);
+}
+
+.agent-step-history-head strong {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Bottom nav bar ---------------------------------------------------- */
+.agent-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--accent-dim);
+}
+
+.agent-nav-bar .btn-sm:not(.btn-primary):not(.btn-secondary) {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px dashed var(--accent-dim);
+}
+
+.agent-nav-bar .btn-sm:not(.btn-primary):not(.btn-secondary):hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+/* === A.7 fix-up: theme native controls modal-wide === */
+
+/* Every raw input/select/textarea inside the agent modal gets the same
+   dark/lime baseline. This replaces the scattered A.5 rules so a field
+   no longer has to know it's an "agent-add-form input" to be styled. */
+.agent-modal input[type="text"],
+.agent-modal input[type="number"],
+.agent-modal input[type="search"],
+.agent-modal input:not([type]),
+.agent-modal select,
+.agent-modal textarea {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-dim);
+  border-radius: 3px;
+  padding: 0.4rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.agent-modal textarea {
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.agent-modal input:focus,
+.agent-modal select:focus,
+.agent-modal textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.2);
+}
+
+.agent-modal input:disabled,
+.agent-modal select:disabled,
+.agent-modal textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.agent-modal select option {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.agent-modal input::placeholder,
+.agent-modal textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+/* Form field scaffolding for the Add composer ----------------------- */
+.agent-add-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.agent-add-field-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* Kind picker: segmented pill group, same visual language as stepper */
+.agent-kind-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.agent-kind-pill {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-dim);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agent-kind-pill:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.agent-kind-pill.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.agent-kind-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.agent-kind-blurb {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 0.25rem 0.1rem 0;
 }
