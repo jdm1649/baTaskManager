@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Data;
+using TaskManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
         ?? "Data Source=taskmanager.db"));
+
+builder.Services.Configure<LMStudioOptions>(
+    builder.Configuration.GetSection(LMStudioOptions.SectionName));
+builder.Services.AddHttpClient<LMStudioClient>();
 
 builder.Services.AddCors(options =>
 {
@@ -37,6 +42,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    await AgentSeeder.SeedIfEmptyAsync(db, app.Environment, logger);
 }
 
 if (app.Environment.IsDevelopment())

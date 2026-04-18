@@ -4,6 +4,7 @@ interface TaskCardProps {
   task: TaskItem;
   onStatusChange: (id: number, status: TaskStatusType) => void;
   onDelete: (id: number) => void;
+  onView: (task: TaskItem) => void;
 }
 
 const priorityConfig: Record<string, { bg: string; color: string; border: string }> = {
@@ -37,7 +38,7 @@ function isOverdue(dueDate: string | null, status: string): boolean {
   return new Date(dueDate) < new Date();
 }
 
-export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onStatusChange, onDelete, onView }: TaskCardProps) {
   const nextStatus: Record<string, TaskStatusType> = {
     Pending: 'InProgress',
     InProgress: 'Completed',
@@ -92,6 +93,12 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
       </div>
 
       <div className="task-card-actions">
+        <button
+          className="btn btn-sm btn-view"
+          onClick={() => onView(task)}
+        >
+          View
+        </button>
         <button
           className="btn btn-sm btn-action"
           onClick={() => onStatusChange(task.id, nextStatus[task.status])}

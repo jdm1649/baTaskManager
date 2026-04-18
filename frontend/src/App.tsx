@@ -4,6 +4,7 @@ import { fetchTasks, createTask, updateTaskStatus, deleteTask } from './api/task
 import { TaskForm } from './components/TaskForm';
 import { TaskCard } from './components/TaskCard';
 import { TaskFilters } from './components/TaskFilters';
+import { TaskDetailModal } from './components/TaskDetailModal';
 import './App.css';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [viewingTask, setViewingTask] = useState<TaskItem | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
@@ -119,6 +121,10 @@ function App() {
         </div>
       )}
 
+      {viewingTask && (
+        <TaskDetailModal task={viewingTask} onClose={() => setViewingTask(null)} />
+      )}
+
       <main className="main-content">
         <TaskFilters
           search={search}
@@ -150,6 +156,7 @@ function App() {
                 task={task}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
+                onView={setViewingTask}
               />
             ))}
           </div>
