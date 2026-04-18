@@ -1,97 +1,106 @@
-"""Pydantic schemas for Phase 1.
+"""Pydantic schemas for the subtask testing loop.
 
-Two kinds of data are modeled here:
-
-* `VAExample` - a documented past support ticket, used as an in-context
-  reference for the BA model. The fields map directly to the Section 5
-  "First Step" list in the planning doc.
-* `BAWorkflow` - the structured output we ask the BA model to produce for a
-  new task. Forcing structure now keeps Phase 2/3 (Chroma storage, categorizer
-  routing) machine-processable without re-parsing free text.
+The atomic unit is a **subtask**: one narrow question asked to the model
+about a parent task. Every run of a subtask produces a `SubtaskRun` record
+capturing exactly what we sent, what we got back, and what LM Studio was
+doing at the time. The run history is the tuning artifact.
 """
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-Priority = Literal["low", "medium", "high", "urgent"]
+SubtaskKind = Literal[
+    "restate",
+    "expected_behavior",
+    "actual_behavior",
+    "categorize",
+    "first_diagnostic_step",
+    "next_diagnostic_step",
+    "confirmation_plan",
+]
 
 
-class VAExample(BaseModel):
-    """A single documented VA example loaded from `examples/*.json`."""
+class ModelSettings(BaseModel):
+    """Per-subtask sampling settings sent to LM Studio."""
 
-    id: str = Field(..., description="Stable identifier, e.g. '01_checkout_button_broken'.")
-    title: str = Field(..., description="One-line summary of the ticket.")
-    category: str = Field(
+    model_config = ConfigDict(extra="forbid")
+
+    temperature: float = Field(0.0, ge=0.0, le=2.0)
+    max_tokens: int = Field(256, ge=1)
+    top_p: float | None = Field(None, ge=0.0, le=1.0)
+
+
+class Subtask(BaseModel):
+    """One narrow question to ask the model about a parent task."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: SubtaskKind
+    order: int = Field(..., ge=1)
+    question: str = Field(
         ...,
         description=(
-            "Coarse category label (e.g. 'auth', 'billing', 'notifications'). "
-            "Used later by the Sorting Layer; for Phase 1 it is just metadata."
+            "The question to ask the model. Must be a single, narrow instruction. "
+            "The parent task text will be appended automatically."
         ),
     )
-    priority: Priority = "medium"
-
-    problem_reported: str = Field(..., description="The problem as the user reported it.")
-    expected_behavior: str = Field(..., description="What the system was supposed to do.")
-    actual_behavior: str = Field(..., description="What the system was actually doing.")
-    diagnosis_steps: list[str] = Field(
-        default_factory=list,
-        description="Ordered steps you took to isolate the cause.",
-    )
-    resolution: str = Field(..., description="What fixed the issue.")
-    confirmation: str = Field(
-        ...,
-        description="How you confirmed the fix held (what you checked at the end).",
-    )
-    tags: list[str] = Field(default_factory=list)
-
-
-class BAStep(BaseModel):
-    """A single step in the BA-generated workflow."""
-
-    order: int = Field(..., ge=1, description="1-based step index.")
-    action: str = Field(..., description="What to do in this step (imperative).")
-    rationale: str = Field(..., description="Why this step, tied to the hypothesis.")
-    expected_outcome: str = Field(
-        ...,
-        description="What result should be observed if the hypothesis holds.",
+    model_settings: ModelSettings = Field(default_factory=ModelSettings)
+    notes: str = Field(
+        "",
+        description="Freeform notes about why this prompt is shaped this way.",
     )
 
 
-class BAWorkflow(BaseModel):
-    """Structured BA output for a new task.
+class LMRuntimeInfo(BaseModel):
+    """Metadata LM Studio reports about a completion (from /api/v0)."""
 
-    Mirrors the VA methodology: state the hypothesis (expected vs actual),
-    enumerate diagnostic steps, then describe how success will be confirmed.
+    model_config = ConfigDict(extra="allow")
+
+    stop_reason: str | None = None
+    tokens_per_second: float | None = None
+    time_to_first_token: float | None = None
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    total_tokens: int | None = None
+    quant: str | None = None
+    context_length: int | None = None
+    runtime: str | None = None
+
+
+class SubtaskRun(BaseModel):
+    """One completed run of a subtask. Written to outputs/ as the tuning record."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    task_id: str
+    subtask_kind: SubtaskKind
+    subtask_order: int
+    run_started_at: datetime
+    model: str
+    sent_messages: list[dict]
+    sent_settings: ModelSettings
+    response_content: str
+    runtime: LMRuntimeInfo
+    user_notes: str = ""
+
+
+class LoadedTask(BaseModel):
+    """A task plus its subtasks, loaded from disk.
+
+    This is an in-memory convenience object; it is not persisted as one file.
+    The canonical on-disk layout is:
+
+        tasks/<task_id>/task.md
+        tasks/<task_id>/subtasks/<NN>_<kind>.json
     """
 
-    task_summary: str = Field(..., description="One-sentence restatement of the incoming task.")
-    suspected_category: str = Field(
-        ...,
-        description="Best-guess category label. In Phase 1 this is the BA's guess; "
-                    "in Phase 3 the Sorting Layer will provide it instead.",
-    )
-    hypothesis_expected: str = Field(..., description="What the system should be doing.")
-    hypothesis_actual: str = Field(..., description="What the system appears to be doing.")
-    steps: list[BAStep] = Field(
-        ...,
-        min_length=1,
-        description="Ordered diagnostic/resolution steps.",
-    )
-    confirmation: str = Field(
-        ...,
-        description="How the operator will confirm the fix end-to-end.",
-    )
-    confidence: float = Field(
-        ...,
-        ge=0.0,
-        le=1.0,
-        description="Self-reported confidence 0..1. Used later by the Tier 3 Confidence Review.",
-    )
-    open_questions: list[str] = Field(
-        default_factory=list,
-        description="Anything the BA needs clarified before the workflow is safe to run.",
-    )
+    model_config = ConfigDict(extra="forbid")
+
+    task_id: str
+    task_text: str
+    subtasks: list[Subtask]

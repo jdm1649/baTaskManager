@@ -1,0 +1,11 @@
+{
+  "kind": "restate",
+  "order": 1,
+  "question": "Rewrite the task below as a single sentence. Do not add details that are not in the task. Do not propose causes. Do not propose solutions. Respond with only the single sentence and nothing else.",
+  "model_settings": {
+    "temperature": 0.0,
+    "max_tokens": 120,
+    "top_p": 1.0
+  },
+  "notes": "Baseline subtask. Tests whether Mistral-7B-Q4_K_M can honor 'one sentence, no embellishment, no solutions' at temp=0. If this fails, something is wrong at the foundation."
+}

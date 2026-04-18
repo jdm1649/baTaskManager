@@ -1,0 +1,1 @@
+Customers report that saved search filters disappear after logging out and back in, but only on Safari. Chrome and Firefox users are unaffected. The behavior started happening after yesterday's release.
