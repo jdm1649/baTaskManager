@@ -1,0 +1,18 @@
+{
+  "id": "04_search_returns_no_results",
+  "title": "Global search returns zero results for terms that clearly exist",
+  "category": "search",
+  "priority": "medium",
+  "problem_reported": "A customer reports that searching for 'invoice 2024-11' returns zero results in global search, even though that exact string appears in a document they can open directly. They can find 'invoice' alone, and '2024-11' alone, but not together.",
+  "expected_behavior": "Global search tokenizes the query, applies AND semantics across tokens, and returns documents that contain all tokens anywhere in their indexed text.",
+  "actual_behavior": "Multi-token queries that span word-boundary characters like '-' return zero matches, while each single token returns results.",
+  "diagnosis_steps": [
+    "Reproduced: 'invoice 2024-11' returns 0, 'invoice' returns 47, '2024-11' returns 12.",
+    "Inspected the query that the search layer sends to Elasticsearch - it is using match_phrase, not match with AND operator.",
+    "Checked the indexed representation of a known matching document - the analyzer splits 'invoice 2024-11' into ['invoice', '2024', '11'] (standard analyzer strips the dash).",
+    "match_phrase requires exact adjacency of tokens *as indexed*, so 'invoice 2024-11' in the query tokenizes the same way but match_phrase then requires 'invoice','2024','11' adjacent in the doc, which they are - but the phrase is also subject to slop and position offsets that the index was not built for."
+  ],
+  "resolution": "Switched the global search from match_phrase to match with 'operator: and' and 'minimum_should_match: 100%'. This matches the documented product behavior ('all tokens must appear') without assuming adjacency.",
+  "confirmation": "Re-ran the reproduction query: 'invoice 2024-11' now returns the expected document and 11 others that contain both tokens. Spot-checked 10 prior support tickets about 'search missing results' - 6 of them now return the expected documents. Added an integration test covering hyphenated-token queries.",
+  "tags": ["search", "elasticsearch", "tokenization", "query-semantics"]
+}

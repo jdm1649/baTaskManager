@@ -1,0 +1,18 @@
+{
+  "id": "05_csv_export_timezone_off_by_one",
+  "title": "CSV export shows dates one day earlier than the UI",
+  "category": "reporting",
+  "priority": "medium",
+  "problem_reported": "A customer in Sydney exported their activity report to CSV. Events that happened on Nov 14 in the UI show up as Nov 13 in the CSV. The in-app view is correct for their timezone; only the export is wrong.",
+  "expected_behavior": "Exports render timestamps using the exporting user's configured timezone, matching what the UI shows.",
+  "actual_behavior": "Exports render timestamps in UTC, which for users east of UTC shows events on the previous calendar day when the event happened early in their local morning.",
+  "diagnosis_steps": [
+    "Reproduced with a test account set to Australia/Sydney: UI shows 2024-11-14 02:30, CSV shows 2024-11-13 15:30.",
+    "Confirmed the timestamps are the same instant - only the rendering differs.",
+    "Read the CSV exporter code: it formats with strftime('%Y-%m-%d %H:%M') on a UTC datetime and never applies the user's timezone.",
+    "Checked the UI code path: it receives UTC from the API and converts in the browser using the user's timezone setting. The export path does not do that conversion because it runs server-side."
+  ],
+  "resolution": "Updated the CSV exporter to load the exporting user's timezone preference, convert each timestamp to that timezone, and append the timezone abbreviation to the column header (e.g. 'Created at (AEDT)') so the rendering is unambiguous.",
+  "confirmation": "Re-ran the export for the Sydney account: dates now match the UI. Ran it again for a Los Angeles account and a UTC account; all three match their respective UI views. Added an exporter test that parameterizes the user's timezone and asserts the rendered date matches the UI formatter.",
+  "tags": ["reporting", "csv", "timezone", "ui-consistency"]
+}

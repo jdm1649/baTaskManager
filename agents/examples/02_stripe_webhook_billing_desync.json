@@ -1,0 +1,18 @@
+{
+  "id": "02_stripe_webhook_billing_desync",
+  "title": "Subscription upgrades charge correctly in Stripe but plan does not update in-app",
+  "category": "billing",
+  "priority": "urgent",
+  "problem_reported": "A customer upgraded from Starter to Pro in our billing page. Stripe shows the payment succeeded and the new subscription is active, but the app still shows them on the Starter plan and blocks Pro features. Support has three tickets in the last day with the same shape.",
+  "expected_behavior": "When Stripe fires customer.subscription.updated, our webhook handler writes the new plan to the accounts table and invalidates the cached entitlements so the UI reflects Pro immediately.",
+  "actual_behavior": "Stripe reports the webhook was delivered with a 200 response, but the account row in our DB still shows plan='starter' and the entitlements cache was not invalidated.",
+  "diagnosis_steps": [
+    "Pulled the webhook event ID from the Stripe dashboard and found the matching request in our logs - status 200, processing time 8 ms.",
+    "That processing time is suspiciously fast. Searched the handler code for early returns.",
+    "Found a guard clause that skips events when event.livemode does not match APP_ENV - but the guard was comparing a bool to the string 'production' and silently returning 200.",
+    "Confirmed the bug by replaying the event in a staging shell: handler returns before touching the DB."
+  ],
+  "resolution": "Fixed the livemode guard to compare against the expected boolean. Backfilled the affected accounts by re-fetching their subscription from Stripe and writing the current plan to the DB.",
+  "confirmation": "Replayed five recent customer.subscription.updated events; each one now writes the correct plan and invalidates the cache. Manually verified the three impacted accounts show Pro in the UI and can use Pro-only features. Added a metric for 'webhook events that returned 200 without a DB write' so the class of bug is visible next time.",
+  "tags": ["stripe", "webhooks", "billing", "silent-failure"]
+}

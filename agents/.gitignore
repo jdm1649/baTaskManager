@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment files (real .env should never be committed; .env.example is)
+.env
+.env.local
+
+# Local model outputs / scratch data
+outputs/
+scratch/
+*.log

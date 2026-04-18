@@ -1,0 +1,19 @@
+[project]
+name = "ba-agents"
+version = "0.1.0"
+description = "Local AI agent system - Phase 1 (BA model over LM Studio)"
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+    "openai>=1.40.0",
+    "pydantic>=2.7.0",
+    "python-dotenv>=1.0.1",
+    "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.2.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

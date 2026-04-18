@@ -1,0 +1,18 @@
+{
+  "id": "06_slack_integration_disconnects",
+  "title": "Slack integration silently disconnects after ~24 hours",
+  "category": "integrations",
+  "priority": "high",
+  "problem_reported": "Workspaces that connect our Slack integration report that it stops posting messages roughly a day after setup. There is no error shown to the user - the integration just stops working. Reconnecting fixes it for another ~24 hours.",
+  "expected_behavior": "Once a workspace authorizes the Slack app, posting continues indefinitely, with access tokens refreshed automatically before they expire.",
+  "actual_behavior": "Posting succeeds for about 24 hours, then every subsequent post fails with 'invalid_auth' from Slack. We log the error but do not surface it to the workspace admin, and we do not attempt a refresh.",
+  "diagnosis_steps": [
+    "Checked the Slack OAuth response for a recently-connected workspace: the payload contains both access_token and refresh_token, and expires_in of 43200 (12 hours).",
+    "Inspected our integrations table: we store access_token and the connection's created_at, but no refresh_token and no expires_at.",
+    "Confirmed that the connector we use was written before Slack rotated tokens were enabled for the workspace; the code assumes access_token never expires.",
+    "Reviewed the Slack app configuration: token rotation is enabled (which is why refresh_token and expires_in are present on the OAuth response)."
+  ],
+  "resolution": "Extended the integrations table with refresh_token and expires_at columns, backfilled them by re-running the OAuth handler against stored payloads where possible, and added a pre-post hook that refreshes the token if it is within 5 minutes of expiry. Surfaced 'invalid_auth' failures to the workspace admin with a 'Reconnect Slack' CTA so silent failures become visible failures.",
+  "confirmation": "Connected a fresh workspace and watched the token refresh correctly at the 11h55m mark. Left it posting hourly for 48 hours - zero failures. Verified the admin-facing error surface triggers correctly by revoking a token in Slack and confirming the reconnect banner appears on the next post attempt.",
+  "tags": ["slack", "oauth", "token-refresh", "silent-failure", "integrations"]
+}
